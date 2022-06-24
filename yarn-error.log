@@ -1,0 +1,38 @@
+Arguments: 
+  /Users/seabornlee/.nvm/versions/node/v16.13.2/bin/node /Users/seabornlee/.nvm/versions/node/v16.13.2/bin/yarn add jest
+
+PATH: 
+  /Users/seabornlee/.sdkman/candidates/java/current/bin:/Users/seabornlee/.nvm/versions/node/v16.13.2/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/Users/seabornlee/Library/Android/sdk/platform-tools
+
+Yarn version: 
+  1.22.18
+
+Node version: 
+  16.13.2
+
+Platform: 
+  darwin arm64
+
+Trace: 
+  Error: read ECONNRESET
+      at TLSWrap.onStreamRead (node:internal/stream_base_commons:220:20)
+
+npm manifest: 
+  {
+    "name": "refactoring-statement",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
