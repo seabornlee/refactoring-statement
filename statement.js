@@ -31,31 +31,70 @@ function formatUSD(number) {
   }).format(number / 100);
 }
 
-function statement(invoice, plays) {
-  let totalAmount = 0;
+function getTotalVolumeCredits(invoice, plays) {
   let volumeCredits = 0;
-  let result = `Statement for ${invoice.customer}\n`;
+  for (let perf of invoice.performances) {
+    const play = plays[perf.playID];
+    switch (play.type) {
+      case 'tragedy':
+        volumeCredits += getTragedyVolumeCredits(perf);
+        break;
+      case 'comedy':
+        volumeCredits += getComedyVolumeCredits(perf);
+        break;
+      default:
+        throw new Error(`unknown type: ${play.type}`);
+    }
+  }
+  return volumeCredits;
+}
+
+function getTotalAmount(invoice, plays) {
+  let totalAmount = 0;
   for (let perf of invoice.performances) {
     const play = plays[perf.playID];
     let thisAmount = 0;
     switch (play.type) {
-    case 'tragedy':
-      thisAmount = getTragedyAmount(perf);
-      volumeCredits += getTragedyVolumeCredits(perf);
-      break;
-    case 'comedy':
-      thisAmount = getComedyAmount(perf);
-      volumeCredits += getComedyVolumeCredits(perf);
-      break;
-    default:
-      throw new Error(`unknown type: ${play.type}`);
+      case 'tragedy':
+        thisAmount = getTragedyAmount(perf);
+        break;
+      case 'comedy':
+        thisAmount = getComedyAmount(perf);
+        break;
+      default:
+        throw new Error(`unknown type: ${play.type}`);
     }
-    // print line for this order
-    result += `  ${play.name}: ${formatUSD(thisAmount)} (${ perf.audience } seats)\n`;
     totalAmount += thisAmount;
   }
-  result += `Amount owed is ${formatUSD(totalAmount)}\n`;
-  result += `You earned ${volumeCredits} credits\n`;
+  return totalAmount;
+}
+
+function getPerformancesDetails(invoice, plays) {
+  let details = "";
+  for (let perf of invoice.performances) {
+    const play = plays[perf.playID];
+    let thisAmount = 0;
+    switch (play.type) {
+      case 'tragedy':
+        thisAmount = getTragedyAmount(perf);
+        break;
+      case 'comedy':
+        thisAmount = getComedyAmount(perf);
+        break;
+      default:
+        throw new Error(`unknown type: ${play.type}`);
+    }
+    // print line for this order
+    details += `  ${play.name}: ${formatUSD(thisAmount)} (${perf.audience} seats)\n`;
+  }
+  return details;
+}
+
+function statement(invoice, plays) {
+  let result = `Statement for ${invoice.customer}\n`;
+  result += getPerformancesDetails(invoice, plays);
+  result += `Amount owed is ${formatUSD(getTotalAmount(invoice, plays))}\n`;
+  result += `You earned ${(getTotalVolumeCredits(invoice, plays))} credits\n`;
   return result;
 }
 
