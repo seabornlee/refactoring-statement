@@ -1,27 +1,5 @@
-function getTragedyAmount(perf) {
-  let result = 40000;
-  if (perf.audience > 30) {
-    result += 1000 * (perf.audience - 30);
-  }
-  return result;
-}
-
-function getComedyAmount(perf) {
-  let result = 30000;
-  if (perf.audience > 20) {
-    result += 10000 + 500 * (perf.audience - 20);
-  }
-  result += 300 * perf.audience;
-  return result;
-}
-
-function getTragedyVolumeCredits(perf) {
-  return Math.max(perf.audience - 30, 0);
-}
-
-function getComedyVolumeCredits(perf) {
-  return Math.max(perf.audience - 30, 0) + Math.floor(perf.audience / 5);
-}
+const TragedyCalculator = require("./tragedyCalculator")
+const ComedyCalculator = require("./comedyCalculator")
 
 function formatUSD(number) {
   return new Intl.NumberFormat('en-US', {
@@ -35,16 +13,7 @@ function getTotalVolumeCredits(invoice, plays) {
   let volumeCredits = 0;
   for (let perf of invoice.performances) {
     const play = plays[perf.playID];
-    switch (play.type) {
-      case 'tragedy':
-        volumeCredits += getTragedyVolumeCredits(perf);
-        break;
-      case 'comedy':
-        volumeCredits += getComedyVolumeCredits(perf);
-        break;
-      default:
-        throw new Error(`unknown type: ${play.type}`);
-    }
+    volumeCredits += createCalculator(play.type).getVolumeCredits(perf);
   }
   return volumeCredits;
 }
@@ -53,20 +22,24 @@ function getTotalAmount(invoice, plays) {
   let totalAmount = 0;
   for (let perf of invoice.performances) {
     const play = plays[perf.playID];
-    let thisAmount = 0;
-    switch (play.type) {
-      case 'tragedy':
-        thisAmount = getTragedyAmount(perf);
-        break;
-      case 'comedy':
-        thisAmount = getComedyAmount(perf);
-        break;
-      default:
-        throw new Error(`unknown type: ${play.type}`);
-    }
-    totalAmount += thisAmount;
+    totalAmount += createCalculator(play.type).getAmount(perf);
   }
   return totalAmount;
+}
+
+function createCalculator(type) {
+  let calculator;
+  switch (type) {
+    case 'tragedy':
+      calculator = new TragedyCalculator();
+      break;
+    case 'comedy':
+      calculator = new ComedyCalculator();
+      break;
+    default:
+      throw new Error(`unknown type: ${type}`);
+  }
+  return calculator;
 }
 
 function getPerformancesDetails(invoice, plays) {
@@ -74,16 +47,8 @@ function getPerformancesDetails(invoice, plays) {
   for (let perf of invoice.performances) {
     const play = plays[perf.playID];
     let thisAmount = 0;
-    switch (play.type) {
-      case 'tragedy':
-        thisAmount = getTragedyAmount(perf);
-        break;
-      case 'comedy':
-        thisAmount = getComedyAmount(perf);
-        break;
-      default:
-        throw new Error(`unknown type: ${play.type}`);
-    }
+    let calculator = createCalculator(play.type);
+    thisAmount = calculator.getAmount(perf);
     // print line for this order
     details += `  ${play.name}: ${formatUSD(thisAmount)} (${perf.audience} seats)\n`;
   }
